@@ -11,6 +11,10 @@ const operations = {
   'x': (a, b) => a * b
 }
 
+const NUMBER_MODE   = 'num'
+const OPERATOR_MODE = 'op'
+const EQUALS_MODE   = 'eq'
+
 
 export default component({
   name: 'CALCULATOR',
@@ -39,32 +43,39 @@ export default component({
 
   model: {
     // when a number button is clicked
-    // - if we weren't in 'num' mode before, initialize the display to '' (this will be the first digit)
-    // - concatenate the number pressed to the right of the current display string and set to 'num' mode
-    NUM_CLICK:     (state, data) => {
-      const current = state.mode === 'num' ? state.display : ''
-      const display = current + data
-      return { ...state, display, mode: 'num' }
+    // - ignore if the new digit is a 0 and there is already a leading zero in the display
+    // - if we weren't in NUMBER_MODE mode before, initialize the display to '' (this will be the first digit)
+    // - if the previous mode was EQUALS_MODE, start a new unchained calc (clear the register and operation)
+    // - concatenate the number pressed to the right of the current display string and set to NUMBER_MODE mode
+    NUMBER_INPUT:     (state, data) => {
+      if (data === '0' && state.display[0] === '0') return ABORT
+      const current   = state.mode === NUMBER_MODE ? state.display : ''
+      const register  = state.mode !== EQUALS_MODE ? state.register : ''
+      const operation = state.mode !== EQUALS_MODE ? state.operation : ''
+      const display   = current + data
+      return { ...state, display, register, operation, mode: NUMBER_MODE }
     },
     // when the '.' button is pressed
+    // - if in EQUALS_MODE (just finished a calc) treat as a new number (set display to '0.', clear the register and operation, and set to NUMBER_MODE)
     // - ignore if the display already contains a '.'
     // - if the display is empty, set it to '0.'
     // - otherwise add '.' to the right of the display string
-    DEC_CLICK:     (state, data) => {
+    ADD_DECIMAL:     (state, data) => {
+      if (state.mode === EQUALS_MODE) return { ...state, display: '0.', register: '', operation: null, mode: NUMBER_MODE }
       if (state.display.includes('.')) return ABORT
-      if (state.display === '') return { ...state, mode: 'num', display: '0.' }
+      if (state.display === '') return { ...state, mode: NUMBER_MODE, display: '0.' }
       const display = state.display + '.'
       return { ...state, display }
     },
     // when '=' is clicked
     // - ignore if there is no operation selected
-    // - if we are in 'eq' mode (we've already hit '=' once before), then repeat the previous operation
+    // - if we are in EQUALS_MODE mode (we've already hit '=' once before), then repeat the previous operation
     //   (flip operands to make sure subtraction and division work as expected)
-    // - otherwise run the calculation and set the mode to 'eq'
-    EQ_CLICK:      (state) => {
+    // - otherwise run the calculation and set the mode to EQUALS_MODE
+    RUN_CALC:      (state) => {
       if (!state.operation) return ABORT
       let register, first, second
-      if (state.mode === 'eq') {
+      if (state.mode === EQUALS_MODE) {
         register = state.register
         first    = state.displayFloat
         second   = state.registerFloat
@@ -74,30 +85,32 @@ export default component({
         second   = state.displayFloat
       }
       const display  = operations[state.operation](first, second).toString()
-      return { ...state, display, register, mode: 'eq' }
+      return { ...state, display, register, mode: EQUALS_MODE }
     },
     // when an operation key is pressed
+    // - ignore if the display is empty and we're not already in OPERATOR_MODE (basically initial app state)
     // - if we're chaining operations (doing another op without hitting '=') then run the previous
     //   calc and store the result in the register
     // - if a previous op was chosen, and no numbers have been entered yet, just change the operation
     // - otherwise move the display to the register and set the operation to the pressed button
-    OP_CLICK:      (state, data) => {
-      const isChainedOp = state.mode == 'num' && state.operation
+    SET_OPERATOR:      (state, data) => {
+      if (state.mode !== OPERATOR_MODE && state.display === '') return ABORT
+      const isChainedOp = state.mode == NUMBER_MODE && state.operation
       const register = isChainedOp ? operations[state.operation](state.registerFloat, state.displayFloat).toString() : state.display
-      if (state.mode === 'op' && state.display === '') return { ...state, operation: data }
+      if (state.mode === OPERATOR_MODE && state.display === '') return { ...state, operation: data }
       const display  = ''
-      return { ...state, display, register, mode: 'op', operation: data }
+      return { ...state, display, register, mode: OPERATOR_MODE, operation: data }
     },
     // when the 'AC' button is clicked
     // - clear the display, register, and operation
-    // - set the mode back to 'num' (ready to enter the first number)
-    AC_CLICK:      (state, data) => ({ display: '', register: '', mode: 'num', operation: null }),
+    // - set the mode back to NUMBER_MODE (ready to enter the first number)
+    CLEAR_ALL:      (state, data) => ({ display: '', register: '', mode: NUMBER_MODE, operation: null }),
     // when the '+/-' button is clicked
     // - reverse the sign by adding a '-' to the left of the display string (or removing it if there's already one there)
-    SIGN_CLICK:    (state, data) => ({ ...state, display: state.display[0] === '-' ? state.display.slice(1) : '-' + state.display }),
+    SWITCH_SIGN:    (state, data) => ({ ...state, display: state.display[0] === '-' ? state.display.slice(1) : '-' + state.display }),
     // when the '%' button is clicked
     // - divide the display by 100
-    PERCENT_CLICK: (state, data) => ({ ...state, display: (state.displayFloat / 100).toString() }),
+    MAKE_PERCENT: (state, data) => ({ ...state, display: (state.displayFloat / 100).toString() }),
   },
 
   intent: ({ DOM }) => {
@@ -108,13 +121,13 @@ export default component({
 
     // get click events from the different button types, and map them to actions (in the model)
     return {
-      NUM_CLICK:     getClickEvent('.number'),
-      DEC_CLICK:     getClickEvent('.decimal'),
-      EQ_CLICK:      getClickEvent('.equal'),
-      OP_CLICK:      getClickEvent('.operator'),
-      AC_CLICK:      getClickEvent('.clear'),
-      SIGN_CLICK:    getClickEvent('.sign'),
-      PERCENT_CLICK: getClickEvent('.percent'),
+      NUMBER_INPUT: getClickEvent('.number'),
+      ADD_DECIMAL:  getClickEvent('.decimal'),
+      RUN_CALC:     getClickEvent('.equal'),
+      SET_OPERATOR: getClickEvent('.operator'),
+      CLEAR_ALL:    getClickEvent('.clear'),
+      SWITCH_SIGN:  getClickEvent('.sign'),
+      MAKE_PERCENT: getClickEvent('.percent'),
     }
   },
 
