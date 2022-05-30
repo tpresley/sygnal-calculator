@@ -1,6 +1,6 @@
 'use strict'
 
-import { ABORT, component } from 'sygnal'
+import { ABORT, component, xs } from 'sygnal'
 
 
 // map operator strings to math functions
@@ -10,6 +10,14 @@ const operations = {
   '/': (a, b) => a / b,
   'x': (a, b) => a * b
 }
+
+const NUMBERS     = ['1','2','3','4','5','6','7','8','9','0']
+const OPERATIONS  = ['/', 'x', '-', '+']
+const CLEAR_ALL   = 'AC'
+const SWITCH_SIGN = '+/-'
+const PERCENT     = '%'
+const DECIMAL     = '.'
+const EQUALS      = '='
 
 const NUMBER_MODE   = 'num'
 const OPERATOR_MODE = 'op'
@@ -119,15 +127,36 @@ export default component({
     // given a CSS selector, get click events and extract the data-value property
     const getClickEvent = (selector) => DOM.select(selector).events('click').map(domData('value'))
 
+    // capture all user keydown events in the browser window, and extract the 'key' from the event object
+    const allKey$   = DOM.select('document').events('keydown').map(e => e.key)
+    // simple helper to determine if the current key pressed matches the specified array of keys
+    const keyFilter = (keys) => (pressed) => keys.includes(pressed)
+
+    // get streams of each category of key input
+    const number$    = allKey$.filter(keyFilter(NUMBERS))
+    const decimal$   = allKey$.filter(keyFilter([DECIMAL]))
+    // allow either the '=' (defined in the EQUALS constant) or the Enter key
+    const equal$     = allKey$.filter(keyFilter([EQUALS, 'Enter']))
+    // allow '*' as an alternative multiplication key, but map it back to 'x' if pressed
+    const operation$ = allKey$.filter(keyFilter([...OPERATIONS, '*'])).map(op => op === '*' ? 'x' : op)
+    // use 'Backspace' as the 'AC' keyboard shortcut
+    const clearAll$  = allKey$.filter(keyFilter(['Backspace']))
+    // use '~' as the '+/-' keyboard shortcut
+    const sign$      = allKey$.filter(keyFilter(['~']))
+    const percent$   = allKey$.filter(keyFilter([PERCENT]))
+
+
     // get click events from the different button types, and map them to actions (in the model)
+    // merge the click events with the keyboard events of the same category
+    // - the actions will trigger whether the user clicks with the mouse or uses the keyboard equivalents
     return {
-      NUMBER_INPUT: getClickEvent('.number'),
-      ADD_DECIMAL:  getClickEvent('.decimal'),
-      RUN_CALC:     getClickEvent('.equal'),
-      SET_OPERATOR: getClickEvent('.operator'),
-      CLEAR_ALL:    getClickEvent('.clear'),
-      SWITCH_SIGN:  getClickEvent('.sign'),
-      MAKE_PERCENT: getClickEvent('.percent'),
+      NUMBER_INPUT: xs.merge( getClickEvent('.number'),   number$    ),
+      ADD_DECIMAL:  xs.merge( getClickEvent('.decimal'),  decimal$   ),
+      RUN_CALC:     xs.merge( getClickEvent('.equal'),    equal$     ),
+      SET_OPERATOR: xs.merge( getClickEvent('.operator'), operation$ ),
+      CLEAR_ALL:    xs.merge( getClickEvent('.clear'),    clearAll$  ),
+      SWITCH_SIGN:  xs.merge( getClickEvent('.sign'),     sign$      ),
+      MAKE_PERCENT: xs.merge( getClickEvent('.percent'),  percent$   ),
     }
   },
 
@@ -148,15 +177,15 @@ export default component({
         </div>
         <div className="keypad">
           <div className="numbers">
-            <div className="button clear">AC</div>
-            <div className="button sign">+/-</div>
-            <div className="button percent">%</div>
-            { [1,2,3,4,5,6,7,8,9,0].map(numButton) }
-            <div className="button decimal">.</div>
+            <div className="button clear">{ CLEAR_ALL }</div>
+            <div className="button sign">{ SWITCH_SIGN }</div>
+            <div className="button percent">{ PERCENT }</div>
+            { NUMBERS.map(numButton) }
+            <div className="button decimal">{ DECIMAL }</div>
           </div>
           <div className="operators">
-            { ['/', 'x', '-', '+'].map(opButton) }
-            <div className="button equal">=</div>
+            { OPERATIONS.map(opButton) }
+            <div className="button equal">{ EQUALS }</div>
           </div>
         </div>
       </div>
