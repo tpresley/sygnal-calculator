@@ -12,6 +12,7 @@ const operations = {
   'x': (a, b) => a * b
 }
 
+// app constants
 const NUMBERS     = ['1','2','3','4','5','6','7','8','9','0']
 const OPERATIONS  = ['/', 'x', '-', '+']
 const CLEAR_ALL   = 'AC'
@@ -20,6 +21,8 @@ const PERCENT     = '%'
 const DECIMAL     = '.'
 const EQUALS      = '='
 
+
+// app 'modes' (state machine)
 const NUMBER_MODE   = 'num'
 const OPERATOR_MODE = 'op'
 const EQUALS_MODE   = 'eq'
@@ -37,6 +40,8 @@ export default component({
 
   // actual display and register state values are stored as strings
   // but we need the float values to perform math operations on
+  // - calculated fields are automatically added to the state
+  //   and are updated whenever the state changes
   calculated: {
     displayFloat: (state) => {
       const floatVal = parseFloat(state.display)
@@ -48,11 +53,6 @@ export default component({
       if (isNaN(floatVal)) return ''
       return floatVal
     }
-  },
-
-  // include the 'digit' component so it can be used as a custom element in the view function
-  components: {
-    digit
   },
 
   model: {
@@ -166,6 +166,13 @@ export default component({
     }
   },
 
+  // include the 'digit' component so it can be used as a custom element in the view function
+  // - unlike React or Vue, components used as custom HTML selectors MUST be declared here and MUST begin with a lower case letter
+  // - this is due to the nature of how components are wired together
+  components: {
+    digit
+  },
+
   view: ({ state }) => {
     const { display, register, operation, mode } = state
 
@@ -173,6 +180,8 @@ export default component({
     const opButton  = op  => <div className="button operator" data-value={ op }>{ op } </div>
 
     // render the register number using the 'digit' component to get an LCD look
+    // - HTML properties will be passed as 'state' to the digit component
+    // - adding an ID ensures that the subtle CSS transitions run on the correct digit
     // - don't render the register if in EQUALS_MODE (just ran a calculation)
     const registerDigits = mode === EQUALS_MODE ? ' ' : register.split('').slice(0, 10).map((digit, ind) => {
       return <digit digit={ digit } fill="#999" skew="-7deg" transition="100ms" id={ 'reg' + (10 - register.length + ind) } />
@@ -180,6 +189,8 @@ export default component({
     const operationText  = mode === EQUALS_MODE ? ' ' : operation
 
     // render the display number using the 'digit' component to get an LCD look
+    // - HTML properties will be passed as 'state' to the digit component
+    // - adding an ID ensures that the subtle CSS transitions run on the correct digit
     const displayDigits  = display.split('').slice(0, 10).map((digit, ind) => {
       return <digit digit={ digit } fill="#AAA" skew="-7deg" transition="100ms" id={ 'disp' + (10 - display.length + ind) } />
     }) || ' '
@@ -188,11 +199,13 @@ export default component({
       <div className="calculator">
         <div className="display">
           <div className="previous">
-            { registerDigits }
+            { // add the register digits from above
+              registerDigits }
             <span className="operation">{ operationText }</span>
           </div>
           <div className="current-container">
-            { displayDigits }
+            { // add the display digits from above
+              displayDigits }
           </div>
         </div>
         <div className="keypad">
@@ -200,11 +213,13 @@ export default component({
             <div className="button clear">{ CLEAR_ALL }</div>
             <div className="button sign">{ SWITCH_SIGN }</div>
             <div className="button percent">{ PERCENT }</div>
-            { NUMBERS.map(numButton) }
+            { // map over the numbers, and create buttons for each (see above for the helper function)
+              NUMBERS.map(numButton) }
             <div className="button decimal">{ DECIMAL }</div>
           </div>
           <div className="operators">
-            { OPERATIONS.map(opButton) }
+            { // map over the operations, and add buttons for each (see above for the helper function)
+              OPERATIONS.map(opButton) }
             <div className="button equal">{ EQUALS }</div>
           </div>
         </div>
