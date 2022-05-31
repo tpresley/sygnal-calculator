@@ -1,6 +1,7 @@
 'use strict'
 
 import { ABORT, component, xs } from 'sygnal'
+import digit from './digit'
 
 
 // map operator strings to math functions
@@ -30,7 +31,7 @@ export default component({
   initialState: {
     display:   '',
     register:  '',
-    mode:      'num',
+    mode:      NUMBER_MODE,
     operation: null,
   },
 
@@ -47,6 +48,11 @@ export default component({
       if (isNaN(floatVal)) return ''
       return floatVal
     }
+  },
+
+  // include the 'digit' component so it can be used as a custom element in the view function
+  components: {
+    digit
   },
 
   model: {
@@ -161,18 +167,32 @@ export default component({
   },
 
   view: ({ state }) => {
+    const { display, register, operation, mode } = state
+
     const numButton = num => <div className="button number" data-value={ `${ num }` }>{ num } </div>
     const opButton  = op  => <div className="button operator" data-value={ op }>{ op } </div>
+
+    // render the register number using the 'digit' component to get an LCD look
+    // - don't render the register if in EQUALS_MODE (just ran a calculation)
+    const registerDigits = mode === EQUALS_MODE ? ' ' : register.split('').slice(0, 10).map((digit, ind) => {
+      return <digit digit={ digit } fill="#999" skew="-7deg" transition="100ms" id={ 'reg' + (10 - register.length + ind) } />
+    })
+    const operationText  = mode === EQUALS_MODE ? ' ' : operation
+
+    // render the display number using the 'digit' component to get an LCD look
+    const displayDigits  = display.split('').slice(0, 10).map((digit, ind) => {
+      return <digit digit={ digit } fill="#AAA" skew="-7deg" transition="100ms" id={ 'disp' + (10 - display.length + ind) } />
+    }) || ' '
 
     return (
       <div className="calculator">
         <div className="display">
           <div className="previous">
-            <span className="register">{ state.mode !== 'eq' && state.register } </span>
-            <span className="operation">{ (state.mode !== 'eq' && state.operation) || ' ' }</span>
+            { registerDigits }
+            <span className="operation">{ operationText }</span>
           </div>
           <div className="current-container">
-            <span className="current">{ state.display || ' ' }</span>
+            { displayDigits }
           </div>
         </div>
         <div className="keypad">
