@@ -82,12 +82,12 @@ export default component({
       return { ...state, display }
     },
     // when '=' is clicked
-    // - ignore if there is no operation selected
+    // - ignore if there is no operation selected or the display is empty (no second operand)
     // - if we are in EQUALS_MODE mode (we've already hit '=' once before), then repeat the previous operation
     //   (flip operands to make sure subtraction and division work as expected)
     // - otherwise run the calculation and set the mode to EQUALS_MODE
     RUN_CALC:      (state) => {
-      if (!state.operation) return ABORT
+      if (!state.operation || state.display === '') return ABORT
       let register, first, second
       if (state.mode === EQUALS_MODE) {
         register = state.register
