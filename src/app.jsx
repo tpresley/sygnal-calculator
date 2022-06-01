@@ -176,8 +176,8 @@ export default component({
   view: ({ state }) => {
     const { display, register, operation, mode } = state
 
-    const numButton = num => <div className="button number" data-value={ `${ num }` }>{ num } </div>
-    const opButton  = op  => <div className="button operator" data-value={ op }>{ op } </div>
+    const numButton = num => <div className="button number" data-value={ `${ num }` }>{ num }</div>
+    const opButton  = op  => <div className="button operator" data-value={ op }>{ op }</div>
 
     // render the register number using the 'digit' component to get an LCD look
     // - HTML properties will be passed as 'state' to the digit component
