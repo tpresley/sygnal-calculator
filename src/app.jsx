@@ -62,7 +62,7 @@ export default component({
     // - if the previous mode was EQUALS_MODE, start a new unchained calc (clear the register and operation)
     // - concatenate the number pressed to the right of the current display string and set to NUMBER_MODE mode
     NUMBER_INPUT:     (state, data) => {
-      if (data === '0' && state.display[0] === '0') return ABORT
+      if (data === '0' && (state.display === '0')) return ABORT
       const current   = state.mode === NUMBER_MODE ? state.display : ''
       const register  = state.mode !== EQUALS_MODE ? state.register : ''
       const operation = state.mode !== EQUALS_MODE ? state.operation : ''
