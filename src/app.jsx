@@ -183,17 +183,18 @@ export default component({
     // - HTML properties will be passed as 'state' to the digit component
     // - adding an ID ensures that the subtle CSS transitions run on the correct digit
     // - don't render the register if in EQUALS_MODE (just ran a calculation)
-    const registerDigits = mode === EQUALS_MODE ? ' ' : register.split('').slice(0, 10).map((digit, ind) => {
+    // - slice the first 10 digits to prevent overflowing the display
+    const registerDigits = mode === EQUALS_MODE ? '' : register.split('').slice(0, 10).map((digit, ind) => {
       return <digit digit={ digit } fill="#999" skew="-7deg" transition="100ms" id={ 'reg' + (10 - register.length + ind) } />
     })
-    const operationText  = mode === EQUALS_MODE ? ' ' : operation
+    const operationText  = mode === EQUALS_MODE ? '' : operation
 
     // render the display number using the 'digit' component to get an LCD look
     // - HTML properties will be passed as 'state' to the digit component
     // - adding an ID ensures that the subtle CSS transitions run on the correct digit
     const displayDigits  = display.split('').slice(0, 10).map((digit, ind) => {
       return <digit digit={ digit } fill="#AAA" skew="-7deg" transition="100ms" id={ 'disp' + (10 - display.length + ind) } />
-    }) || ' '
+    })
 
     return (
       <div className="calculator">
