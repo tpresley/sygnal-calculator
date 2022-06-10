@@ -16,6 +16,6 @@
     "streamLib": "xstream"
   },
   "dependencies": {
-    "sygnal": "^2.2.0"
+    "sygnal": "^2.4.0"
   }
 }
