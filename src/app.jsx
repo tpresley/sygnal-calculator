@@ -1,7 +1,7 @@
 'use strict'
 
 import { ABORT, component, xs } from 'sygnal'
-import digit from './digit'
+import Digit from './digit'
 
 
 // map operator strings to math functions
@@ -27,6 +27,11 @@ const NUMBER_MODE   = 'num'
 const OPERATOR_MODE = 'op'
 const EQUALS_MODE   = 'eq'
 
+const DIGIT_SKEW    = '-7deg'
+const TRANSITION    = '100ms'
+const DISPLAY_FILL  = '#AAA'
+const REGISTER_FILL = '#999'
+
 
 export default component({
   name: 'CALCULATOR',
@@ -38,11 +43,11 @@ export default component({
     operation: null,
   },
 
-  // actual display and register state values are stored as strings
-  // but we need the float values to perform math operations on
-  // - calculated fields are automatically added to the state
-  //   and are updated whenever the state changes
   calculated: {
+    // actual display and register state values are stored as strings
+    // but we need the float values to perform math operations on
+    // - calculated fields are automatically added to the state
+    //   and are updated whenever the state changes
     displayFloat: (state) => {
       const floatVal = parseFloat(state.display)
       if (isNaN(floatVal)) return ''
@@ -52,7 +57,26 @@ export default component({
       const floatVal = parseFloat(state.register)
       if (isNaN(floatVal)) return ''
       return floatVal
-    }
+    },
+
+    // the Digit component expects objects with digit, fill, skew, transition, and id properties
+    // these calculated fields convert the display and register into arrays of objects ready for use
+    // in a collection of Digits
+    displayDigits: (state) => {
+      const fill = DISPLAY_FILL
+      const skew = DIGIT_SKEW
+      const transition = TRANSITION
+
+      return state.display.split('').slice(0, 10).map((digit, ind) => ({ digit, fill, skew, transition, id: 'disp' + (10 - state.display.length + ind) }))
+    },
+    registerDigits: (state) => {
+      const fill = REGISTER_FILL
+      const skew = DIGIT_SKEW
+      const transition = TRANSITION
+
+      if (state.mode === EQUALS_MODE) return []
+      return state.register.split('').slice(0, 10).map((digit, ind) => ({ digit, fill, skew, transition, id: 'reg' + (10 - state.register.length + ind) }))
+    },
   },
 
   model: {
@@ -166,61 +190,34 @@ export default component({
     }
   },
 
-  // include the 'digit' component so it can be used as a custom element in the view function
-  // - unlike React or Vue, components used as custom HTML selectors MUST be declared here and MUST begin with a lower case letter
-  // - this is due to the nature of how components are wired together
-  components: {
-    digit
-  },
-
   view: ({ state }) => {
-    const { display, register, operation, mode } = state
+    const {operation, mode } = state
 
-    const numButton = num => <div className="button number" data-value={ `${ num }` }>{ num }</div>
-    const opButton  = op  => <div className="button operator" data-value={ op }>{ op }</div>
+    // create number and operation buttons from the constant arrays
+    const numberButtons    = NUMBERS.map(num => <div className="button number" data-value={ `${ num }` }>{ num }</div>)
+    const operationButtons = OPERATIONS.map(op  => <div className="button operator" data-value={ op }>{ op }</div>)
 
-    // render the register number using the 'digit' component to get an LCD look
-    // - HTML properties will be passed as 'state' to the digit component
-    // - adding an ID ensures that the subtle CSS transitions run on the correct digit
-    // - don't render the register if in EQUALS_MODE (just ran a calculation)
-    // - slice the first 10 digits to prevent overflowing the display
-    const registerDigits = mode === EQUALS_MODE ? '' : register.split('').slice(0, 10).map((digit, ind) => {
-      return <digit digit={ digit } fill="#999" skew="-7deg" transition="100ms" id={ 'reg' + (10 - register.length + ind) } />
-    })
-    const operationText  = mode === EQUALS_MODE ? '' : operation
-
-    // render the display number using the 'digit' component to get an LCD look
-    // - HTML properties will be passed as 'state' to the digit component
-    // - adding an ID ensures that the subtle CSS transitions run on the correct digit
-    const displayDigits  = display.split('').slice(0, 10).map((digit, ind) => {
-      return <digit digit={ digit } fill="#AAA" skew="-7deg" transition="100ms" id={ 'disp' + (10 - display.length + ind) } />
-    })
+    const operationText = mode === EQUALS_MODE ? '' : operation
 
     return (
       <div className="calculator">
         <div className="display">
           <div className="previous">
-            { // add the register digits from above
-              registerDigits }
+            <collection of={ Digit } for="registerDigits" className="register-container" />
             <span className="operation">{ operationText }</span>
           </div>
-          <div className="current-container">
-            { // add the display digits from above
-              displayDigits }
-          </div>
+          <collection of={ Digit } for="displayDigits" className="current-container" />
         </div>
         <div className="keypad">
           <div className="numbers">
             <div className="button clear">{ CLEAR_ALL }</div>
             <div className="button sign">{ SWITCH_SIGN }</div>
             <div className="button percent">{ PERCENT }</div>
-            { // map over the numbers, and create buttons for each (see above for the helper function)
-              NUMBERS.map(numButton) }
+            { numberButtons }
             <div className="button decimal">{ DECIMAL }</div>
           </div>
           <div className="operators">
-            { // map over the operations, and add buttons for each (see above for the helper function)
-              OPERATIONS.map(opButton) }
+            { operationButtons }
             <div className="button equal">{ EQUALS }</div>
           </div>
         </div>

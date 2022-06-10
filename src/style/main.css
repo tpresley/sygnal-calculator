@@ -38,6 +38,10 @@ body {
   justify-content: flex-end;
 }
 
+.register-container {
+  display: contents;
+}
+
 .current-container {
   font-size: 3rem;
   height: 1.2em;
