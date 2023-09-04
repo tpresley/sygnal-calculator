@@ -191,7 +191,7 @@ export default component({
   },
 
   view: ({ state }) => {
-    const {operation, mode } = state
+    const { operation, mode } = state
 
     // create number and operation buttons from the constant arrays
     const numberButtons    = NUMBERS.map(num => <div className="button number" data-value={ `${ num }` }>{ num }</div>)
@@ -203,10 +203,10 @@ export default component({
       <div className="calculator">
         <div className="display">
           <div className="previous">
-            <collection of={ Digit } for="registerDigits" className="register-container" />
+            <collection of={ Digit } from="registerDigits" className="register-container" />
             <span className="operation">{ operationText }</span>
           </div>
-          <collection of={ Digit } for="displayDigits" className="current-container" />
+          <collection of={ Digit } from="displayDigits" className="current-container" />
         </div>
         <div className="keypad">
           <div className="numbers">
