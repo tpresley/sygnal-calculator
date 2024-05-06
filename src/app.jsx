@@ -51,10 +51,10 @@ export default function CALCULATOR({ state }) {
               in the calculated digit array field on the current state
             - props are passed down to each component
           */}
-          <collection of={ Digit } from="registerDigits" fill={ DISPLAY_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="register-container" />
+          <collection of={ Digit } from="registerDigits" fill={ REGISTER_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="register-container" />
           <span className="operation">{ operationText }</span>
         </div>
-        <collection of={ Digit } from="displayDigits" fill={ REGISTER_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="current-container" />
+        <collection of={ Digit } from="displayDigits" fill={ DISPLAY_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="current-container" />
       </div>
       <div className="keypad">
         <div className="numbers">

@@ -20,10 +20,9 @@ const SEGMENTS = {
 }
 
 export default function DIGIT({ state, props, calculated }) {
-  console.log('DIGIT STATE:', state)
   // get the required values from state
-  // - HTML properties set on the component when used as a custom HTML selector will be passed in as properties on the state
   const { id, digit } = state
+  // caluculated values are available on the state itelf, but are also in the calculated argument
   const { segments } = calculated
   
   // props set on a collection element are passed to all items in the collection
