@@ -35,6 +35,7 @@ export default function CALCULATOR({ state }) {
   const { operation, mode } = state
 
   // create number and operation buttons from the constant arrays
+  // - these could also be made into components, but since they don't require state they can remain simple functions
   const numberButtons    = NUMBERS.map(num => <div className="button number" data-value={ `${ num }` }>{ num }</div>)
   const operationButtons = OPERATIONS.map(op  => <div className="button operator" data-value={ op }>{ op }</div>)
 
@@ -44,10 +45,16 @@ export default function CALCULATOR({ state }) {
     <div className="calculator">
       <div className="display">
         <div className="previous">
-          <collection of={ Digit } from="registerDigits" className="register-container" />
+          {/*
+            use the built-in collection element to add arrays of components 
+            - this line will create a new Digit component for each item
+              in the calculated digit array field on the current state
+            - props are passed down to each component
+          */}
+          <collection of={ Digit } from="registerDigits" fill={ DISPLAY_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="register-container" />
           <span className="operation">{ operationText }</span>
         </div>
-        <collection of={ Digit } from="displayDigits" className="current-container" />
+        <collection of={ Digit } from="displayDigits" fill={ REGISTER_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="current-container" />
       </div>
       <div className="keypad">
         <div className="numbers">
@@ -89,23 +96,13 @@ CALCULATOR.calculated = {
     return floatVal
   },
 
-  // the Digit component expects objects with digit, fill, skew, transition, and id properties
-  // these calculated fields convert the display and register into arrays of objects ready for use
-  // in a collection of Digits
+  // convert display and register into an array of displayable digits
   displayDigits: (state) => {
-    const fill = DISPLAY_FILL
-    const skew = DIGIT_SKEW
-    const transition = TRANSITION
-
-    return state.display.split('').slice(0, 10).map((digit, ind) => ({ digit, fill, skew, transition, id: 'disp' + (10 - state.display.length + ind) }))
+    return state.display.split('').slice(0, 10).map((digit, ind) => ({ digit, id: 'disp' + (10 - state.display.length + ind) }))
   },
   registerDigits: (state) => {
-    const fill = REGISTER_FILL
-    const skew = DIGIT_SKEW
-    const transition = TRANSITION
-
     if (state.mode === EQUALS_MODE) return []
-    return state.register.split('').slice(0, 10).map((digit, ind) => ({ digit, fill, skew, transition, id: 'reg' + (10 - state.register.length + ind) }))
+    return state.register.split('').slice(0, 10).map((digit, ind) => ({ digit, id: 'reg' + (10 - state.register.length + ind) }))
   },
 }
 

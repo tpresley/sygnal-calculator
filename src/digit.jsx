@@ -19,10 +19,15 @@ const SEGMENTS = {
   '.': '0000000',
 }
 
-export default function DIGIT({ state }) {
+export default function DIGIT({ state, props, calculated }) {
+  console.log('DIGIT STATE:', state)
   // get the required values from state
   // - HTML properties set on the component when used as a custom HTML selector will be passed in as properties on the state
-  let { digit, segments, fill, background, padding, skew, transition, id } = state
+  const { id, digit } = state
+  const { segments } = calculated
+  
+  // props set on a collection element are passed to all items in the collection
+  let { fill, background, padding, skew, transition } = props
 
   // set default padding and background if needed
   padding    ||= '0.1em'
