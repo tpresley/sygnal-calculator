@@ -1,15 +1,17 @@
 {
   "name": "sygnal-calculator",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "gh-pages": "^4.0.0",
-    "vite": "^2.9.9"
+    "gh-pages": "^6.1.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.12"
   },
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
-    "build": "vite build --emptyOutDir",
+    "build": "tsc && vite build --emptyOutDir",
     "gh-pages": "gh-pages -d dist -b gh-pages",
     "deploy": "npm run build && npm run gh-pages"
   },
@@ -18,6 +20,6 @@
     "streamLib": "xstream"
   },
   "dependencies": {
-    "sygnal": "^3.0.1"
+    "sygnal": "^4.0.2"
   }
 }

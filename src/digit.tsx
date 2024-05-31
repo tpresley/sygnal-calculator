@@ -1,29 +1,29 @@
 import { classes } from "sygnal"
+import { Component } from 'sygnal/types'
+import type { Digit, DigitProps, DigitCalculated } from './types'
 
 // map numbers to which segments are displayed
 // - '0' is off, '1' is on
 // - first segment is the top one, goes around clockwise, the middle segment is last
-const SEGMENTS = {
-  0: '1111110',
-  1: '0110000',
-  2: '1101101',
-  3: '1111001',
-  4: '0110011',
-  5: '1011011',
-  6: '1011111',
-  7: '1110000',
-  8: '1111111',
-  9: '1111011',
+const SEGMENTS: { [digit: string]: string } = {
+  '0': '1111110',
+  '1': '0110000',
+  '2': '1101101',
+  '3': '1111001',
+  '4': '0110011',
+  '5': '1011011',
+  '6': '1011111',
+  '7': '1110000',
+  '8': '1111111',
+  '9': '1111011',
   '-': '0000001',
   // add the decimal to prevent errors, but it actually gets rendered as a span
   '.': '0000000',
 }
 
-export default function DIGIT({ state, props, calculated }) {
+const DIGIT: Component<Digit, DigitProps, any, any, DigitCalculated> = (props, state) => {
   // get the required values from state
-  const { id, digit } = state
-  // caluculated values are available on the state itelf, but are also in the calculated argument
-  const { segments } = calculated
+  const { id, digit, segments } = state
   
   // props set on a collection element are passed to all items in the collection
   let { fill, background, padding, skew, transition } = props
@@ -36,7 +36,7 @@ export default function DIGIT({ state, props, calculated }) {
   if (digit === '.') return <span style={{ fontSize: `calc(1em + ${ padding } * 2)`, color: fill }}>.</span>
 
   // calculate the classes for each individual segment given the index position
-  const segmentClasses = (ind) => classes('segment', `segment-${ ind }`, { on: segments[ind] })
+  const segmentClasses = (ind: number) => classes('segment', `segment-${ ind }`, { on: segments[ind] })
 
   // style each segment with the provided fill color
   const style = { fill, transition }
@@ -67,3 +67,5 @@ export default function DIGIT({ state, props, calculated }) {
 DIGIT.calculated = {
   segments: (state) => SEGMENTS[state.digit].split('').map(segment => segment === '1' )
 }
+
+export default DIGIT
