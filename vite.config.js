@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite';
+import sygnal from 'sygnal/vite'
 
 
 // https://vitejs.dev/config/
 
 export default defineConfig({
+  plugins: [sygnal()],
   base: '',
   publicDir: './public',
   build: {
@@ -14,8 +16,4 @@ export default defineConfig({
     port: 5173,
     force: true
   },
-  esbuild: {
-    jsxFactory: `jsx`,
-    jsxInject: `import { jsx } from 'sygnal/jsx'`,
-  }
 });

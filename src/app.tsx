@@ -177,12 +177,10 @@ CALCULATOR.model = {
 
 CALCULATOR.intent = ({ DOM }) => {
   // helper that extracts a specified HTML data property from an event target
-  const domData       = (field: string)    => (e: Event): string | undefined => e.target instanceof HTMLElement ? e.target.dataset[field] : ''
-  // given a CSS selector, get click events and extract the data-value property
-  const getClickEvent = (selector: string) => DOM.select(selector).events('click').map(domData('value'))
+  const getClickEvent = (selector: string) => DOM.click(selector).data('value')
 
   // capture all user keydown events in the browser window, and extract the 'key' from the event object
-  const allKey$   = DOM.select('document').events('keydown').map(e => e.key)
+  const allKey$   = DOM.select('document').events('keydown').key()
   // simple helper to determine if the current key pressed matches the specified array of keys
   const keyFilter = (keys: string[]) => (pressed: string) => keys.includes(pressed)
 
