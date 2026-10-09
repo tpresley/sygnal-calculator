@@ -1,5 +1,5 @@
 import { Collection, ABORT, xs } from 'sygnal'
-import { RootComponent } from 'sygnal/types'
+import type { RootComponent } from 'sygnal'
 import type { AppState, AppActions, AppCalculated, Operation, DigitProps } from './types'
 import { MODES, OPERATIONS } from './types'
 import Digit from './digit'
@@ -28,7 +28,7 @@ const DISPLAY_FILL  = '#AAA'
 const REGISTER_FILL = '#999'
 
 
-const CALCULATOR: RootComponent<AppState, any, AppActions, AppCalculated> = (_props, state) => {
+const CALCULATOR: RootComponent<AppState, any, AppActions, AppCalculated> = ({ state }) => {
   const { operation, mode } = state
 
   // create number and operation buttons from the constant arrays
@@ -48,10 +48,14 @@ const CALCULATOR: RootComponent<AppState, any, AppActions, AppCalculated> = (_pr
               in the calculated digit array field on the current state
             - props are passed down to each component
           */}
-          <Collection<DigitProps> of={ Digit } from="registerDigits" fill={ REGISTER_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="register-container" />
+          <div className="register-container">
+            <Collection<DigitProps> of={ Digit } from="registerDigits" fill={ REGISTER_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } />
+          </div>
           <span className="operation">{ operationText }</span>
         </div>
-        <Collection<DigitProps> of={ Digit } from="displayDigits" fill={ DISPLAY_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } className="current-container" />
+        <div className="current-container">
+          <Collection<DigitProps> of={ Digit } from="displayDigits" fill={ DISPLAY_FILL } skew={ DIGIT_SKEW } transition={ TRANSITION } />
+        </div>
       </div>
       <div className="keypad">
         <div className="numbers">

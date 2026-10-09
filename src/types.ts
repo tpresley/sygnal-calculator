@@ -51,8 +51,7 @@ export type DigitProps = {
   background?: string,
   padding?: string,
   skew?: string,
-  transition?: string,
-  className?: string
+  transition?: string
 }
 
 export type DigitCalculated = {

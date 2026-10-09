@@ -1,5 +1,5 @@
-import { classes } from "sygnal"
-import { Component } from 'sygnal/types'
+import { classes } from 'sygnal'
+import type { Component } from 'sygnal'
 import type { Digit, DigitProps, DigitCalculated } from './types'
 
 // map numbers to which segments are displayed
@@ -21,7 +21,7 @@ const SEGMENTS: { [digit: string]: string } = {
   '.': '0000000',
 }
 
-const DIGIT: Component<Digit, DigitProps, any, any, DigitCalculated> = (props, state) => {
+const DIGIT: Component<Digit, DigitProps, any, any, DigitCalculated> = ({ state, ...props }) => {
   // get the required values from state
   const { id, digit, segments } = state
   
